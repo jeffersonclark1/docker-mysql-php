@@ -1,0 +1,49 @@
+version: "3"
+services:
+  app:
+    build:
+      args:
+        user: es21
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: es21
+    container_name: es21-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - es21
+
+  db:
+    image: mysql:5.7
+    container_name: es21-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: es21
+      MYSQL_ROOT_PASSWORD: es21password
+      MYSQL_PASSWORD: es21password
+      MYSQL_USER: es21estudent
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - es21
+
+  nginx:
+    image: nginx:alpine
+    container_name: es21-nginx
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - es21
+
+networks:
+  es21:
+    driver: bridge
